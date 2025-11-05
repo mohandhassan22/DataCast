@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقارير الموظفين</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <div class="logo-container me-2">
+                    <img src="/static/images/logo-icon.png" alt="Data Cast Logo">
+                </div>
+                نظام إدارة الموظفين بالفروع
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/branches">الفروع</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">الموظفين</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">البحث</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/reports">التقارير</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="report-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-bar-chart"></i> تقارير الموظفين</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Active Employees Report Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header report-title">
+                        <h3>تقرير الموظفين النشطين</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="activeBranchFilter" class="form-label">تصفية حسب الفرع:</label>
+                                <select class="form-select" id="activeBranchFilter">
+                                    <option value="">جميع الفروع</option>
+                                    {% for branch in branches %}
+                                    <option value="{{ branch.id }}">{{ branch.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="activeStatusFilter" class="form-label">تصفية حسب الحالة:</label>
+                                <select class="form-select" id="activeStatusFilter">
+                                    <option value="Active" selected>Active</option>
+                                    <option value="Training">Training</option>
+                                    <option value="Suspend">Suspend</option>
+                                    <option value="Termination">Termination</option>
+                                    <option value="">جميع الحالات</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">إجمالي الموظفين:</label>
+                                <div class="form-control bg-light text-center">
+                                    <span id="activeEmployeesCount" class="fw-bold">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="chart-container">
+                                    <canvas id="activeEmployeesChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="chart-container">
+                                    <canvas id="employeesByBranchChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>الاسم</th>
+                                        <th>الفرع</th>
+                                        <th>الحالة</th>
+                                        <th>رقم البطاقة</th>
+                                        <th>اليوزر</th>
+                                        <th>تاريخ التعيين</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeEmployeesTable">
+                                    <!-- سيتم ملء هذا الجدول بواسطة JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminated Employees Report Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header report-title">
+                        <h3>تقرير الموظفين المنتهية خدمتهم</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="terminatedBranchFilter" class="form-label">تصفية حسب الفرع:</label>
+                                <select class="form-select" id="terminatedBranchFilter">
+                                    <option value="">جميع الفروع</option>
+                                    {% for branch in branches %}
+                                    <option value="{{ branch.id }}">{{ branch.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="terminatedMonthFilter" class="form-label">تصفية حسب الشهر:</label>
+                                <input type="month" class="form-control" id="terminatedMonthFilter">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">إجمالي الموظفين المنتهية خدمتهم:</label>
+                                <div class="form-control bg-light text-center">
+                                    <span id="terminatedEmployeesCount" class="fw-bold">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="chart-container">
+                                    <canvas id="terminationsByMonthChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <div class="chart-container">
+                                    <canvas id="terminationsByBranchChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>الاسم</th>
+                                        <th>الفرع</th>
+                                        <th>رقم البطاقة</th>
+                                        <th>اليوزر</th>
+                                        <th>تاريخ التعيين</th>
+                                        <th>تاريخ انتهاء الخدمة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="terminatedEmployeesTable">
+                                    <!-- سيتم ملء هذا الجدول بواسطة JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header report-title">
+                        <h3>تصدير التقارير</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <button id="exportActiveEmployees" class="btn btn-primary w-100">
+                                    <i class="bi bi-file-earmark-excel"></i> تصدير تقرير الموظفين النشطين
+                                </button>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <button id="exportTerminatedEmployees" class="btn btn-primary w-100">
+                                    <i class="bi bi-file-earmark-excel"></i> تصدير تقرير الموظفين المنتهية خدمتهم
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // بيانات الموظفين والفروع
+        let employees = [];
+        let branches = [];
+        let branchMap = {};
+
+        // الرسوم البيانية
+        let activeEmployeesChart;
+        let employeesByBranchChart;
+        let terminationsByMonthChart;
+        let terminationsByBranchChart;
+
+        // استرجاع بيانات الموظفين والفروع عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // استرجاع بيانات الفروع
+            fetch('/branches/api/list')
+                .then(response => response.json())
+                .then(data => {
+                    branches = data;
+                    // إنشاء خريطة للفروع للوصول السريع
+                    branches.forEach(branch => {
+                        branchMap[branch.id] = branch.name;
+                    });
+                })
+                .catch(error => console.error('Error fetching branches:', error));
+
+            // استرجاع بيانات الموظفين
+            fetch('/employees/api/list')
+                .then(response => response.json())
+                .then(data => {
+                    employees = data;
+                    updateActiveEmployeesReport();
+                    updateTerminatedEmployeesReport();
+                    initCharts();
+                })
+                .catch(error => console.error('Error fetching employees:', error));
+
+            // إضافة مستمعي الأحداث للفلاتر
+            document.getElementById('activeBranchFilter').addEventListener('change', updateActiveEmployeesReport);
+            document.getElementById('activeStatusFilter').addEventListener('change', updateActiveEmployeesReport);
+            document.getElementById('terminatedBranchFilter').addEventListener('change', updateTerminatedEmployeesReport);
+            document.getElementById('terminatedMonthFilter').addEventListener('change', updateTerminatedEmployeesReport);
+
+            // إضافة مستمعي الأحداث لأزرار التصدير
+            document.getElementById('exportActiveEmployees').addEventListener('click', exportActiveEmployees);
+            document.getElementById('exportTerminatedEmployees').addEventListener('click', exportTerminatedEmployees);
+        });
+
+        // تحديث تقرير الموظفين النشطين
+        function updateActiveEmployeesReport() {
+            const branchFilter = document.getElementById('activeBranchFilter').value;
+            const statusFilter = document.getElementById('activeStatusFilter').value;
+
+            // تصفية الموظفين حسب الفلاتر
+            const filteredEmployees = employees.filter(employee => {
+                const branchMatch = !branchFilter || employee.branch_id == branchFilter;
+                const statusMatch = !statusFilter || employee.status === statusFilter;
+                return branchMatch && statusMatch;
+            });
+
+            // تحديث عدد الموظفين
+            document.getElementById('activeEmployeesCount').textContent = filteredEmployees.length;
+
+            // تحديث الجدول
+            const tableBody = document.getElementById('activeEmployeesTable');
+            tableBody.innerHTML = '';
+
+            if (filteredEmployees.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8" class="text-center">لا توجد بيانات متاحة</td>';
+                tableBody.appendChild(row);
+            } else {
+                filteredEmployees.forEach((employee, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${employee.name_ar}</td>
+                        <td>${branchMap[employee.branch_id] || 'غير معروف'}</td>
+                        <td>
+                            <span class="badge ${getBadgeClass(employee.status)}">${employee.status}</span>
+                        </td>
+                        <td>${employee.id_card_number || '-'}</td>
+                        <td>${employee.username || '-'}</td>
+                        <td>${formatDate(employee.hire_date)}</td>
+                        <td>
+                            <a href="/employees/${employee.id}" class="btn btn-sm btn-info btn-action">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // تحديث الرسوم البيانية
+            updateActiveCharts(filteredEmployees);
+        }
+
+        // تحديث تقرير الموظفين المنتهية خدمتهم
+        function updateTerminatedEmployeesReport() {
+            const branchFilter = document.getElementById('terminatedBranchFilter').value;
+            const monthFilter = document.getElementById('terminatedMonthFilter').value;
+
+            // تصفية الموظفين حسب الفلاتر
+            const filteredEmployees = employees.filter(employee => {
+                const branchMatch = !branchFilter || employee.branch_id == branchFilter;
+                const isTerminated = employee.status === 'Termination' && employee.resignation_date;
+                
+                // تصفية حسب الشهر إذا تم تحديده
+                let monthMatch = true;
+                if (monthFilter && isTerminated) {
+                    const resignationDate = new Date(employee.resignation_date);
+                    const filterDate = new Date(monthFilter);
+                    monthMatch = resignationDate.getFullYear() === filterDate.getFullYear() && 
+                                resignationDate.getMonth() === filterDate.getMonth();
+                }
+                
+                return branchMatch && isTerminated && monthMatch;
+            });
+
+            // تحديث عدد الموظفين
+            document.getElementById('terminatedEmployeesCount').textContent = filteredEmployees.length;
+
+            // تحديث الجدول
+            const tableBody = document.getElementById('terminatedEmployeesTable');
+            tableBody.innerHTML = '';
+
+            if (filteredEmployees.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8" class="text-center">لا توجد بيانات متاحة</td>';
+                tableBody.appendChild(row);
+            } else {
+                filteredEmployees.forEach((employee, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${employee.name_ar}</td>
+                        <td>${branchMap[employee.branch_id] || 'غير معروف'}</td>
+                        <td>${employee.id_card_number || '-'}</td>
+                        <td>${employee.username || '-'}</td>
+                        <td>${formatDate(employee.hire_date)}</td>
+                        <td>${formatDate(employee.resignation_date)}</td>
+                        <td>
+                            <a href="/employees/${employee.id}" class="btn btn-sm btn-info btn-action">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // تحديث الرسوم البيانية
+            updateTerminatedCharts(filteredEmployees);
+        }
+
+        // تهيئة الرسوم البيانية
+        function initCharts() {
+            // رسم بياني للموظفين حسب الحالة
+            const activeCtx = document.getElementById('activeEmployeesChart').getContext('2d');
+            activeEmployeesChart = new Chart(activeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Active', 'Training', 'Suspend', 'Termination'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#9e9e9e']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'توزيع الموظفين حسب الحالة'
+                        }
+                    }
+                }
+            });
+
+            // رسم بياني للموظفين حسب الفرع
+            const branchCtx = document.getElementById('employeesByBranchChart').getContext('2d');
+            employeesByBranchChart = new Chart(branchCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'عدد الموظفين',
+                        data: [],
+                        backgroundColor: '#6a1b9a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'توزيع الموظفين حسب الفرع'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // رسم بياني للموظفين المنتهية خدمتهم حسب الشهر
+            const monthCtx = document.getElementById('terminationsByMonthChart').getContext('2d');
+            terminationsByMonthChart = new Chart(monthCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'عدد الموظفين المنتهية خدمتهم',
+                        data: [],
+                        borderColor: '#6a1b9a',
+                        backgroundColor: 'rgba(106, 27, 154, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'توزيع الموظفين المنتهية خدمتهم حسب الشهر'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // رسم بياني للموظفين المنتهية خدمتهم حسب الفرع
+            const termBranchCtx = document.getElementById('terminationsByBranchChart').getContext('2d');
+            terminationsByBranchChart = new Chart(termBranchCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'عدد الموظفين المنتهية خدمتهم',
+                        data: [],
+                        backgroundColor: '#6a1b9a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'توزيع الموظفين المنتهية خدمتهم حسب الفرع'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // تحديث الرسوم البيانية للموظفين النشطين
+        function updateActiveCharts(filteredEmployees) {
+            if (!activeEmployeesChart || !employeesByBranchChart) return;
+
+            // تحديث رسم بياني للموظفين حسب الحالة
+            const statusCounts = {
+                'Active': 0,
+                'Training': 0,
+                'Suspend': 0,
+                'Termination': 0
+            };
+
+            filteredEmployees.forEach(employee => {
+                if (statusCounts.hasOwnProperty(employee.status)) {
+                    statusCounts[employee.status]++;
+                }
+            });
+
+            activeEmployeesChart.data.datasets[0].data = [
+                statusCounts['Active'],
+                statusCounts['Training'],
+                statusCounts['Suspend'],
+                statusCounts['Termination']
+            ];
+            activeEmployeesChart.update();
+
+            // تحديث رسم بياني للموظفين حسب الفرع
+            const branchCounts = {};
+            filteredEmployees.forEach(employee => {
+                const branchId = employee.branch_id;
+                if (!branchCounts[branchId]) {
+                    branchCounts[branchId] = 0;
+                }
+                branchCounts[branchId]++;
+            });
+
+            const branchLabels = [];
+            const branchData = [];
+
+            for (const branchId in branchCounts) {
+                branchLabels.push(branchMap[branchId] || `فرع ${branchId}`);
+                branchData.push(branchCounts[branchId]);
+            }
+
+            employeesByBranchChart.data.labels = branchLabels;
+            employeesByBranchChart.data.datasets[0].data = branchData;
+            employeesByBranchChart.update();
+        }
+
+        // تحديث الرسوم البيانية للموظفين المنتهية خدمتهم
+        function updateTerminatedCharts(filteredEmployees) {
+            if (!terminationsByMonthChart || !terminationsByBranchChart) return;
+
+            // تحديث رسم بياني للموظفين المنتهية خدمتهم حسب الشهر
+            const monthCounts = {};
+            filteredEmployees.forEach(employee => {
+                if (employee.resignation_date) {
+                    const date = new Date(employee.resignation_date);
+                    const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    if (!monthCounts[monthYear]) {
+                        monthCounts[monthYear] = 0;
+                    }
+                    monthCounts[monthYear]++;
+                }
+            });
+
+            // ترتيب الأشهر تصاعدياً
+            const sortedMonths = Object.keys(monthCounts).sort();
+            const monthLabels = sortedMonths.map(month => {
+                const [year, monthNum] = month.split('-');
+                return `${monthNum}/${year}`;
+            });
+            const monthData = sortedMonths.map(month => monthCounts[month]);
+
+            terminationsByMonthChart.data.labels = monthLabels;
+            terminationsByMonthChart.data.datasets[0].data = monthData;
+            terminationsByMonthChart.update();
+
+            // تحديث رسم بياني للموظفين المنتهية خدمتهم حسب الفرع
+            const branchCounts = {};
+            filteredEmployees.forEach(employee => {
+                const branchId = employee.branch_id;
+                if (!branchCounts[branchId]) {
+                    branchCounts[branchId] = 0;
+                }
+                branchCounts[branchId]++;
+            });
+
+            const branchLabels = [];
+            const branchData = [];
+
+            for (const branchId in branchCounts) {
+                branchLabels.push(branchMap[branchId] || `فرع ${branchId}`);
+                branchData.push(branchCounts[branchId]);
+            }
+
+            terminationsByBranchChart.data.labels = branchLabels;
+            terminationsByBranchChart.data.datasets[0].data = branchData;
+            terminationsByBranchChart.update();
+        }
+
+        // تصدير تقرير الموظفين النشطين
+        function exportActiveEmployees() {
+            const branchFilter = document.getElementById('activeBranchFilter').value;
+            const statusFilter = document.getElementById('activeStatusFilter').value;
+            
+            // تحديد معلمات التصدير
+            const params = new URLSearchParams();
+            if (branchFilter) params.append('branch_id', branchFilter);
+            if (statusFilter) params.append('status', statusFilter);
+            
+            // تنزيل الملف
+            window.location.href = `/reports/export/active?${params.toString()}`;
+        }
+
+        // تصدير تقرير الموظفين المنتهية خدمتهم
+        function exportTerminatedEmployees() {
+            const branchFilter = document.getElementById('terminatedBranchFilter').value;
+            const monthFilter = document.getElementById('terminatedMonthFilter').value;
+            
+            // تحديد معلمات التصدير
+            const params = new URLSearchParams();
+            if (branchFilter) params.append('branch_id', branchFilter);
+            if (monthFilter) params.append('month', monthFilter);
+            
+            // تنزيل الملف
+            window.location.href = `/reports/export/terminated?${params.toString()}`;
+        }
+
+        // دالة مساعدة لتنسيق التاريخ
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG');
+        }
+
+        // دالة مساعدة للحصول على فئة الشارة
+        function getBadgeClass(status) {
+            switch (status) {
+                case 'Active': return 'bg-success';
+                case 'Training': return 'bg-warning text-dark';
+                case 'Suspend': return 'bg-danger';
+                case 'Termination': return 'bg-secondary';
+                default: return 'bg-secondary';
+            }
+        }
+    </script>
+</body>
+</html>

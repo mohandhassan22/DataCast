@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة فرع جديد</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color:rgb(129, 5, 157);
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+        .branch-header {
+            background-color: #f1f8ff;
+            border-bottom: 2px solid #9002d7;
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        #map {
+            height: 300px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">نظام إدارة الموظفين بالفروع</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/branches">الفروع</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">الموظفين</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">البحث</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="branch-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-building-add"></i> إضافة فرع جديد</h2>
+                <a href="/branches" class="btn btn-secondary">
+                    <i class="bi bi-arrow-right"></i> العودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="branchForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label required-field">اسم الفرع</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="code" class="form-label required-field">كود الفرع</label>
+                                    <input type="text" class="form-control" id="code" name="code" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">الرقم الأرضي للفرع</label>
+                                    <input type="text" class="form-control" id="phone" name="phone">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="ip_address" class="form-label">IP الخاص بالفرع</label>
+                                    <input type="text" class="form-control" id="ip_address" name="ip_address">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="regional_manager" class="form-label">اسم الريجنال</label>
+                                    <input type="text" class="form-control" id="regional_manager" name="regional_manager">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="super_name" class="form-label">اسم السوبر</label>
+                                    <input type="text" class="form-control" id="super_name" name="super_name">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="area_name" class="form-label">اسم الأريا</label>
+                                    <input type="text" class="form-control" id="area_name" name="area_name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="area_email" class="form-label">ميل الأريا</label>
+                                    <input type="email" class="form-control" id="area_email" name="area_email">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="branch_manager" class="form-label">اسم مدير الفرع</label>
+                                    <input type="text" class="form-control" id="branch_manager" name="branch_manager">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">موقع الفرع</label>
+                                    <div id="map"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="location_latitude" class="form-label">خط العرض</label>
+                                    <input type="text" class="form-control" id="location_latitude" name="location_latitude" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="location_longitude" class="form-label">خط الطول</label>
+                                    <input type="text" class="form-control" id="location_longitude" name="location_longitude" readonly>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="location_address" class="form-label">العنوان التفصيلي</label>
+                                    <textarea class="form-control" id="location_address" name="location_address" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> حفظ
+                                </button>
+                                <a href="/branches" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> إلغاء
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // تهيئة الخريطة
+        let map = L.map('map').setView([30.0444, 31.2357], 10); // القاهرة كموقع افتراضي
+        let marker;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // إضافة علامة عند النقر على الخريطة
+        map.on('click', function(e) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker(e.latlng).addTo(map);
+            
+            // تحديث حقول الإحداثيات
+            document.getElementById('location_latitude').value = e.latlng.lat.toFixed(6);
+            document.getElementById('location_longitude').value = e.latlng.lng.toFixed(6);
+        });
+
+        // معالجة إرسال النموذج
+        document.getElementById('branchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('/branches/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('تم إضافة الفرع بنجاح');
+                    window.location.href = '/branches';
+                } else {
+                    alert(data.error || 'حدث خطأ أثناء إضافة الفرع');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إضافة الفرع');
+            });
+        });
+    </script>
+</body>
+</html>

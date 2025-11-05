@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البحث المتقدم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <div class="logo-container me-2">
+                    <img src="/static/images/logo-icon.png" alt="Data Cast Logo">
+                </div>
+                نظام إدارة الموظفين بالفروع
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/branches">الفروع</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">الموظفين</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/search">البحث</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">التقارير</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="search-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-search"></i> البحث المتقدم</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="search-form">
+                            <form id="searchForm" action="/search/results" method="GET">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="search_term" class="form-label">كلمة البحث</label>
+                                        <input type="text" class="form-control" id="search_term" name="search_term" placeholder="أدخل كلمة البحث...">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="search_type" class="form-label">نوع البحث</label>
+                                        <select class="form-select" id="search_type" name="search_type">
+                                            <option value="name">اسم الموظف</option>
+                                            <option value="id_card">رقم البطاقة</option>
+                                            <option value="username">اسم المستخدم</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="branch_id" class="form-label">الفرع</label>
+                                        <select class="form-select" id="branch_id" name="branch_id">
+                                            <option value="">جميع الفروع</option>
+                                            {% for branch in branches %}
+                                            <option value="{{ branch.id }}">{{ branch.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="status" class="form-label">الحالة</label>
+                                        <select class="form-select" id="status" name="status">
+                                            <option value="">جميع الحالات</option>
+                                            <option value="Active">Active</option>
+                                            <option value="Training">Training</option>
+                                            <option value="Suspend">Suspend</option>
+                                            <option value="Termination">Termination</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search"></i> بحث
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

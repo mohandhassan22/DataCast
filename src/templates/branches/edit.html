@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل بيانات الفرع</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8f9fa; }
+        .navbar { background-color: #0d6efd; }
+        .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        .form-label { font-weight: 600; }
+        .branch-header { background-color: #f1f8ff; border-bottom: 2px solid #0d6efd; padding: 15px 0; margin-bottom: 20px; }
+        .required-field::after { content: " *"; color: red; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">نظام إدارة الموظفين بالفروع</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/branches">الفروع</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/employees">الموظفين</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/search">البحث</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="branch-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-pencil-square"></i> تعديل بيانات الفرع</h2>
+                <a href="/branches" class="btn btn-secondary"><i class="bi bi-arrow-right"></i> العودة للقائمة</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="editBranchForm" action="/branches/{{ branch.id }}" method="POST">
+                            <input type="hidden" name="_method" value="PUT">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label required-field">اسم الفرع</label>
+                                    <input type="text" class="form-control" id="name" name="name" value="{{ branch.name }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="code" class="form-label required-field">كود الفرع</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="{{ branch.code }}" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">الرقم الأرضي للفرع</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" value="{{ branch.phone }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="ip_address" class="form-label">IP الخاص بالفرع</label>
+                                    <input type="text" class="form-control" id="ip_address" name="ip_address" value="{{ branch.ip_address }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="regional_manager" class="form-label">اسم الريجنال</label>
+                                    <input type="text" class="form-control" id="regional_manager" name="regional_manager" value="{{ branch.regional_manager }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="super_name" class="form-label">اسم السوبر</label>
+                                    <input type="text" class="form-control" id="super_name" name="super_name" value="{{ branch.super_name }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="area_name" class="form-label">اسم الأريا</label>
+                                    <input type="text" class="form-control" id="area_name" name="area_name" value="{{ branch.area_name }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="area_email" class="form-label">ميل الأريا</label>
+                                    <input type="email" class="form-control" id="area_email" name="area_email" value="{{ branch.area_email }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="branch_manager" class="form-label">اسم مدير الفرع</label>
+                                    <input type="text" class="form-control" id="branch_manager" name="branch_manager" value="{{ branch.branch_manager }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="location_latitude" class="form-label">خط العرض</label>
+                                    <input type="text" class="form-control" id="location_latitude" name="location_latitude" value="{{ branch.location_latitude }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="location_longitude" class="form-label">خط الطول</label>
+                                    <input type="text" class="form-control" id="location_longitude" name="location_longitude" value="{{ branch.location_longitude }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="location_address" class="form-label">العنوان التفصيلي</label>
+                                    <textarea class="form-control" id="location_address" name="location_address" rows="2">{{ branch.location_address }}</textarea>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> حفظ التعديلات
+                                </button>
+                                <a href="/branches" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> إلغاء
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('editBranchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('_method', 'PUT');
+            fetch('/branches/{{ branch.id }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('تم تحديث بيانات الفرع بنجاح');
+                    window.location.href = '/branches';
+                } else {
+                    alert(data.error || 'حدث خطأ أثناء التحديث');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء التحديث');
+            });
+        });
+    </script>
+</body>
+</html>

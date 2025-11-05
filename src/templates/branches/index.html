@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الفروع</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <div class="logo-container me-2">
+                    <img src="/static/images/logo-icon.png" alt="Data Cast Logo">
+                </div>
+                نظام إدارة الموظفين بالفروع
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/branches">الفروع</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">الموظفين</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">البحث</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">التقارير</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="branch-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-building"></i> إدارة الفروع</h2>
+                <a href="/branches/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> إضافة فرع جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>اسم الفرع</th>
+                                        <th>كود الفرع</th>
+                                        <th>IP الخاص بالفرع</th>
+                                        <th>مدير الفرع</th>
+                                        <th>الموقع</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="branches-table">
+                                    {% for branch in branches %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ branch.name }}</td>
+                                        <td>{{ branch.code }}</td>
+                                        <td>{{ branch.ip_address }}</td>
+                                        <td>{{ branch.branch_manager }}</td>
+                                        <td>
+                                            {% if branch.location_latitude and branch.location_longitude %}
+                                            <a href="https://maps.google.com/?q={{ branch.location_latitude }},{{ branch.location_longitude }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-geo-alt"></i> عرض الموقع
+                                            </a>
+                                            {% else %}
+                                            <span class="badge bg-secondary">لا يوجد موقع</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="/branches/{{ branch.id }}" class="btn btn-sm btn-info btn-action">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="/branches/{{ branch.id }}/edit" class="btn btn-sm btn-warning btn-action">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger btn-action" onclick="deleteBranch('{{ branch.id }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">لا توجد فروع مسجلة</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Delete Confirmation -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    هل أنت متأكد من حذف هذا الفرع؟ هذا الإجراء لا يمكن التراجع عنه.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let branchIdToDelete = null;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+        function deleteBranch(branchId) {
+            branchIdToDelete = branchId;
+            deleteModal.show();
+        }
+
+        document.getElementById('confirmDelete').addEventListener('click', function() {
+            if (branchIdToDelete) {
+                fetch(`/branches/${branchIdToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        deleteModal.hide();
+                        // إعادة تحميل الصفحة بعد الحذف
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'حدث خطأ أثناء الحذف');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء الحذف');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
