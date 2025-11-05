@@ -294,7 +294,8 @@ DataCastMangment/
 
 ---
 
-**تم التطوير بواسطة**: DataCast Management Team  
+**تم التطوير بواسطة**: Mohand hassan 
 **الإصدار**: 1.0.0  
 **آخر تحديث**: 2024
+
 
